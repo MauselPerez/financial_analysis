@@ -151,16 +151,41 @@
 
 <script>
     $(document).ready(function() {
+        // Obtener los productos y llenar el select
         $.get('../../app/controllers/controller_index.php', function(data) {
-            var labels = Object.keys(data[1].data);
-            var prices = Object.values(data[1].data);
-            createChart(data[1].product, labels, prices);
+            $.each(data, function(productId, productData) {
+                var option = $('<option>').val(productId).text(productData.product);
+                $('#productSelect').append(option);
+            });
+        });
+
+        // Evento de cambio para el select
+        $('#productSelect').change(function() {
+            var productId = $(this).val();
+            // Enviar el ID del producto seleccionado al controlador
+            $.get('../../app/controllers/controller_index.php', { productId: productId }, function(response) {
+                console.log(response);
+                var product = response.product;
+                var chartData = response.data.data;
+                var labels = chartData.map(function(item) {
+                    return item.year;
+                });
+                var prices = chartData.map(function(item) {
+                    return item.price;
+                });
+                createChart(product, labels, prices);
+            });
         });
     });
 
+    var myChart; // Declara la variable fuera de la función createChart
+
     function createChart(product, labels, prices) {
         var ctx = document.getElementById('barChart').getContext('2d');
-        var myChart = new Chart(ctx, {
+        if (myChart) {
+            myChart.destroy();
+        }
+        myChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,

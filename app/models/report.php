@@ -36,6 +36,34 @@ class Report
         $stmt->execute();
         return $stmt;
     }
+
+    public function get_report_by_product($productId) 
+    {
+        $query = "SELECT
+                    fr.year,
+                    SUM(fr.price) AS total_price
+                FROM 
+                    fa_reports fr
+                WHERE
+                    fr.product_id = :product_id
+                GROUP BY
+                    fr.year";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':product_id', $productId);
+        $stmt->execute();
+        return $stmt;
+    }
+
+    public function get_product_name($productId) 
+    {
+        $query = "SELECT name FROM fa_products WHERE id = :product_id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':product_id', $productId);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['name'];
+    }
+
 } 
 
 ?>
